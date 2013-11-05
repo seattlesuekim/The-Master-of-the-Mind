@@ -57,7 +57,7 @@ class Breaker
 	attr_accessor :guess_length
 
 	def initialize
-		@guess_length = guess_length
+		@guess_length = 4
 	end
 
 	def change_guess_length(n)
@@ -73,7 +73,7 @@ class Breaker
 			if user_guess.length != @guess_length
 				next
 			end
-			user_guess.each do |item|
+			user_guess.each_char do |item|
 				if item >= 'a' && item <= u_char
 					invalid = false
 					break
@@ -123,12 +123,11 @@ class Board
 		@board_list.count
 	end
 
-  # Gives the error undefined method [] for nil:NilClass
   def curr_board
 		current_board = ''
     i = 0
     while i < turn_number
-      current_board += "\n#{(board_list[i]['feedback']).join(', ')} | #{(board_list[i]['guess'].join(''))} |  #{i}"
+      current_board += "\n#{(board_list[i]['feedback']).join(', ')} | #{(board_list[i]['guess'].join(' '))} |  #{i}"
       i += 1
     end
 			current_board
@@ -168,9 +167,10 @@ def game_engine
 	maker.make_code
 	while board.determine_state == 'in progress'
 		puts board.complete_board
-		guess = list(breaker.guess(maker.upper_char))
+    # guess in an array
+		guess = [breaker.guess(maker.upper_char)]
 		guess_copy = guess
-		feedback = sort(maker.give_feedback(guess_copy))
+		feedback = maker.give_feedback(guess_copy).sort
 		board.make_turn(feedback, guess)
 	end
 	# Game over
