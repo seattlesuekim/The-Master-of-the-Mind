@@ -14,10 +14,12 @@ class Maker
 
 	def make_code
     i = 0
-    while i <= @positions
+    while i < @positions
       secret << (rand(97..@upper_char.ord)).chr
       i += 1
     end
+    # Printing Secret
+    puts "Secret: #{@secret}"
     @secret
 	end
 
@@ -68,7 +70,7 @@ class Breaker
 		while invalid
 			puts 'Enter your guess: '
 			user_guess = gets.chomp
-			if user_guess.count != @guess_length
+			if user_guess.length != @guess_length
 				next
 			end
 			user_guess.each do |item|
@@ -121,11 +123,11 @@ class Board
 		@board_list.count
 	end
 
-  # undefined method [] for nil:NilClass
+  # Gives the error undefined method [] for nil:NilClass
   def curr_board
 		current_board = ''
     i = 0
-    while i <= turn_number
+    while i < turn_number
       current_board += "\n#{(board_list[i]['feedback']).join(', ')} | #{(board_list[i]['guess'].join(''))} |  #{i}"
       i += 1
     end
