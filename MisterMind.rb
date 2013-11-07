@@ -33,13 +33,10 @@ class Maker
     index = 0
     # Check for x's
     while index < guess.count
-      puts "x index is #{index}"
-      puts "secret copy is #{secret}"
       if guess[index] == secret[index]
         secret.delete_at(index)
         guess.delete_at(index)
         feedback_list << 'x'
-        puts "x feedback list is #{feedback_list}"
       else
         index += 1
         # Check for o's
@@ -47,8 +44,6 @@ class Maker
     end
     index = 0
     while index < guess.count
-      puts " o secret copy is #{secret}"
-      puts " o index is #{index}"
       letter = guess[index]
       if secret.include?(letter)
         secret.delete_at(secret.index(letter))
@@ -58,7 +53,6 @@ class Maker
         index += 1
         feedback_list << ' '
       end
-      puts "o feedback list is #{feedback_list}"
     end
     feedback_list
   end
