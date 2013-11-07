@@ -23,10 +23,6 @@ class Maker
     @secret
   end
 
-  # Broken: only gives (wrong) feedback on first iteration.
-  # It only works when the secret code has all unique letters.
-  # When the secret code contains repeats, the number of missing feedback elements = num_of_repeats - 1
-  # After the first iteration, secret somehow becomes an empty array!
   def give_feedback(guess)
     feedback_list = []
     secret = @secret.dup
@@ -120,14 +116,14 @@ class Board
     current_board = ''
     i = 0
     while i < turn_number
-      current_board += "\n{#{(board_list[i][:feedback]).join(', ')}} |#{(board_list[i][:guess].join(' '))}|  #{i}"
+      current_board += "\n{#{(board_list[i][:feedback]).join('  ')}} |#{(board_list[i][:guess].join(' '))}|  #{i}"
       i += 1
     end
     current_board
   end
 
-  def determine_state
-    if board_list.count >= 1 && board_list[-1][:feedback].count('x') == 4
+  def determine_state(maker)
+    if board_list.count >= 1 && board_list[-1][:feedback].count('x') == maker.positions
       'breaker wins'
     elsif future_board.empty?
       return 'maker wins'
@@ -144,33 +140,40 @@ def game_engine
   # Difficulty level
   puts 'Shall I make it: (e)asy, (m)oderate, or (h)ard: '
   level = gets.chomp
+  puts "\nRules:"
+  puts 'x = correct letter in the correct position'
+  puts 'o = correct letter in the incorrect position'
   if level == 'e'
     board.num_rows = 14
     maker.change_maker_level(4, 'f')
+    puts 'Guess letters between a and f, inclusive.'
   elsif level == 'm'
     board.num_rows = 12
     maker.change_maker_level(4, 'f')
+    puts 'Guess letters between a and f, inclusive.'
   elsif level == 'h'
     board.num_rows = 12
     board.shift = 13
     maker.change_maker_level(5, 'g')
+    puts 'Guess letters between a and g, inclusive.'
     breaker.guess_length = 5
   end
 
+
 #The actual game play
   maker.make_code
-  while board.determine_state == 'in progress'
+  while board.determine_state(maker) == 'in progress'
     puts board.complete_board
     # guess in an array
     guess = breaker.guess(maker.upper_char).split(//)
-    feedback = maker.give_feedback(guess.dup).sort
+    feedback = maker.give_feedback(guess.dup).sort!.reverse!
     board.make_turn(feedback, guess)
   end
 # Game over
   puts board.complete_board
-  if board.determine_state == 'breaker wins'
+  if board.determine_state(maker) == 'breaker wins'
     puts 'The code breaker wins!'
-  elsif board.determine_state == 'maker wins'
+  elsif board.determine_state(maker) == 'maker wins'
     puts 'The code maker wins!'
     puts "The code was #{maker.secret}"
   end
