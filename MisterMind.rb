@@ -18,8 +18,6 @@ class Maker
       secret << (rand(('a'.ord)..(@upper_char.ord))).chr
       i += 1
     end
-    # Printing Secret
-    puts "Secret: #{@secret}"
     @secret
   end
 
