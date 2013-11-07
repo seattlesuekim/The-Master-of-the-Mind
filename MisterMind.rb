@@ -23,16 +23,23 @@ class Maker
     @secret
   end
 
+  # Broken: only gives (wrong) feedback on first iteration.
+  # It only works when the secret code has all unique letters.
+  # When the secret code contains repeats, the number of missing feedback elements = num_of_repeats - 1
+  # After the first iteration, secret somehow becomes an empty array!
   def give_feedback(guess)
     feedback_list = []
-    secret_copy = @secret
+    secret = @secret.dup
     index = 0
     # Check for x's
     while index < guess.count
-      if guess[index] == @secret[index]
-        secret_copy.delete(@secret[index])
-        guess.delete(guess[index])
+      puts "x index is #{index}"
+      puts "secret copy is #{secret}"
+      if guess[index] == secret[index]
+        secret.delete_at(index)
+        guess.delete_at(index)
         feedback_list << 'x'
+        puts "x feedback list is #{feedback_list}"
       else
         index += 1
         # Check for o's
@@ -40,16 +47,19 @@ class Maker
     end
     index = 0
     while index < guess.count
-      if secret_copy.include? guess[index]
-        secret_copy.delete(guess[index])
-        guess.delete(guess[index])
+      puts " o secret copy is #{secret}"
+      puts " o index is #{index}"
+      letter = guess[index]
+      if secret.include?(letter)
+        secret.delete_at(secret.index(letter))
+        guess.delete_at(index)
         feedback_list << 'o'
       else
         index += 1
         feedback_list << ' '
       end
+      puts "o feedback list is #{feedback_list}"
     end
-    puts "Feedback list is #{feedback_list}"
     feedback_list
   end
 end
@@ -59,10 +69,6 @@ class Breaker
 
   def initialize
     @guess_length = 4
-  end
-
-  def change_guess_length(n)
-    @guess_length = n
   end
 
   def guess(u_char)
@@ -96,14 +102,6 @@ class Board
     @shift = 10
   end
 
-  def change_shift(n)
-    @shift = n
-  end
-
-  def change_num_rows(n)
-    @num_rows = n
-  end
-
   def make_turn(feedback, guess)
     @board_list << {guess: guess, feedback: feedback}
   end
@@ -111,13 +109,13 @@ class Board
   def future_board
     next_board = ''
     (turn_number..@num_rows).each do |i|
-      next_board += "\n{" + ' ' * @shift + "} |      |  #{i}"
+      next_board += "\n{" + ' ' * @shift + "} |       |  #{i}"
     end
     next_board
   end
 
   def complete_board
-    curr_board() + future_board()
+    curr_board + future_board
   end
 
   def turn_number
@@ -128,7 +126,7 @@ class Board
     current_board = ''
     i = 0
     while i < turn_number
-      current_board += "\n#{(board_list[i][:feedback]).join(', ')} | #{(board_list[i][:guess].join(' '))} |  #{i}"
+      current_board += "\n{#{(board_list[i][:feedback]).join(', ')}} |#{(board_list[i][:guess].join(' '))}|  #{i}"
       i += 1
     end
     current_board
@@ -137,7 +135,7 @@ class Board
   def determine_state
     if board_list.count >= 1 && board_list[-1][:feedback].count('x') == 4
       'breaker wins'
-    elsif not future_board()
+    elsif future_board.empty?
       return 'maker wins'
     else
       'in progress'
@@ -153,16 +151,16 @@ def game_engine
   puts 'Shall I make it: (e)asy, (m)oderate, or (h)ard: '
   level = gets.chomp
   if level == 'e'
-    board.change_num_rows(14)
+    board.num_rows = 14
     maker.change_maker_level(4, 'f')
   elsif level == 'm'
-    board.change_num_rows(12)
+    board.num_rows = 12
     maker.change_maker_level(4, 'f')
   elsif level == 'h'
-    board.change_num_rows(12)
-    board.change_shift(13)
+    board.num_rows = 12
+    board.shift = 13
     maker.change_maker_level(5, 'g')
-    breaker.change_guess_length(5)
+    breaker.guess_length = 5
   end
 
 #The actual game play
@@ -171,8 +169,7 @@ def game_engine
     puts board.complete_board
     # guess in an array
     guess = breaker.guess(maker.upper_char).split(//)
-    guess_copy = guess
-    feedback = maker.give_feedback(guess_copy).sort
+    feedback = maker.give_feedback(guess.dup).sort
     board.make_turn(feedback, guess)
   end
 # Game over
